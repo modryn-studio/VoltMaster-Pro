@@ -13,15 +13,18 @@ AI-powered job management and quoting system for electrical contractors. Turn jo
 
 ```
 VoltMaster-Pro/
-├── frontend/           # Next.js application
-│   ├── src/
-│   │   ├── app/       # App Router pages
-│   │   ├── components/ # React components
-│   │   ├── lib/       # Utilities (Supabase clients)
-│   │   └── hooks/     # Custom React hooks
-│   ├── supabase-schema.sql  # Database schema
-│   └── SUPABASE_SETUP.md    # Setup instructions
-└── docs/              # Documentation
+├── .github/           # GitHub configuration
+│   └── copilot-instructions.md
+├── src/
+│   ├── app/          # Next.js App Router pages
+│   ├── components/   # React components (including shadcn/ui)
+│   ├── lib/          # Utilities (Supabase clients, helpers)
+│   └── hooks/        # Custom React hooks
+├── supabase/         # Database
+│   └── schema.sql    # Database schema with RLS policies
+├── docs/             # Documentation
+├── package.json      # Dependencies
+└── SUPABASE_SETUP.md # Setup guide
 ```
 
 ## 🛠️ Setup
@@ -37,7 +40,7 @@ VoltMaster-Pro/
 1. **Clone the repository**
    ```bash
    git clone https://github.com/modryn-studio/VoltMaster-Pro.git
-   cd VoltMaster-Pro/frontend
+   cd VoltMaster-Pro
    ```
 
 2. **Install dependencies**
@@ -47,9 +50,9 @@ VoltMaster-Pro/
 
 3. **Configure Supabase**
    
-   Follow the detailed setup guide in [`frontend/SUPABASE_SETUP.md`](frontend/SUPABASE_SETUP.md):
+   Follow the detailed setup guide in [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md):
    - Create Supabase project
-   - Run database schema
+   - Run database schema from `supabase/schema.sql`
    - Configure storage buckets
    - Copy credentials to `.env.local`
 
@@ -66,7 +69,7 @@ VoltMaster-Pro/
 
 1. Push code to GitHub
 2. Import project in [Vercel](https://vercel.com)
-3. Set **Root Directory**: `frontend`
+3. Vercel will auto-detect Next.js configuration
 4. Add environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -74,9 +77,10 @@ VoltMaster-Pro/
 
 ## 📖 Documentation
 
-- [Supabase Setup Guide](frontend/SUPABASE_SETUP.md) - Database configuration
-- [GitHub Workflow](docs/Github_Issues_Workflow.md) - Development process
+- [Supabase Setup Guide](SUPABASE_SETUP.md) - Database configuration
+- [GitHub Copilot Instructions](.github/copilot-instructions.md) - Development guidelines
 - [Spec Documentation](docs/spec.md) - Feature specifications
+- [Database Schema](supabase/schema.sql) - Full database structure
 
 ## 🎯 Features
 
@@ -89,11 +93,20 @@ VoltMaster-Pro/
 
 ## 🔐 Environment Variables
 
-Required in `frontend/.env.local`:
+Required in `.env.local`:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+## 📝 Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
 ```
 
 ## 📝 License

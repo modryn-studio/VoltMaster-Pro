@@ -16,7 +16,7 @@
 1. Open your Supabase project dashboard
 2. Go to **SQL Editor** in the left sidebar
 3. Click **New query**
-4. Copy the contents of `supabase-schema.sql` from this directory
+4. Copy the contents of `supabase/schema.sql` from this directory
 5. Paste into the SQL editor
 6. Click **Run** (bottom right)
 7. Verify all tables were created in **Table Editor**
@@ -42,7 +42,7 @@
 
 ## 5. Configure Environment Variables
 
-1. In the `frontend/` directory, create `.env.local`:
+1. Create `.env.local` in the root directory:
    ```bash
    cp .env.example .env.local
    ```
@@ -56,7 +56,6 @@
 ## 6. Test the Connection
 
 ```bash
-cd frontend
 npm run dev
 ```
 
