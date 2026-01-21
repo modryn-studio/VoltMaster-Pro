@@ -56,23 +56,90 @@ export default function Dashboard() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      const supabase = createClient()
       
-      // TODO: Replace with Supabase queries when connected
-      // For now, use mock data
-      const filteredMockJobs = activeFilter === 'All' 
-        ? mockJobs 
-        : activeFilter === 'Active'
-          ? mockJobs.filter(j => j.status === 'In Progress' || j.status === 'Scheduled')
-          : mockJobs.filter(j => j.status === activeFilter)
+      // Build status filter for Supabase query
+      let statusFilter: string | string[] = []
+      if (activeFilter === 'Active') {
+        statusFilter = ['in_progress', 'scheduled']
+      } else if (activeFilter !== 'All') {
+        statusFilter = activeFilter.toLowerCase()
+      }
       
-      setJobs(filteredMockJobs)
+      // Fetch jobs with customer data
+      let query = supabase
+        .from('jobs')
+        .select(`
+          id,
+          job_type,
+          status,
+          quote_total,
+          address,
+          customer:customers(name)
+        `)
+        .order('created_at', { ascending: false })
+      
+      // Apply status filter if not "All"
+      if (activeFilter === 'Active') {
+        query = query.in('status', statusFilter as string[])
+      } else if (activeFilter !== 'All') {
+        query = query.eq('status', statusFilter as string)
+      }
+      
+      const { data: jobsData, error: jobsError } = await query
+      
+      if (jobsError) {
+        console.error('Error fetching jobs:', jobsError)
+        // Fall back to mock data if Supabase not configured
+        setJobs(mockJobs)
+        setStats({ week_revenue: 8650, active_jobs: 2, pending_quotes: 1 })
+        return
+      }
+      
+      // Transform data to match component interface
+      const transformedJobs = (jobsData || []).map((job: any) => ({
+        id: job.id,
+        customer_name: job.customer?.name || 'Unknown Customer',
+        job_type: job.job_type,
+        customer_address: job.address,
+        status: job.status.split('_').map((word: string) => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' '),
+        quote_total: job.quote_total
+      }))
+      
+      setJobs(transformedJobs)
+      
+      // Calculate stats from fetched data
+      const oneWeekAgo = new Date()
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+      
+      const { data: weekJobs } = await supabase
+        .from('jobs')
+        .select('quote_total')
+        .eq('status', 'complete')
+        .gte('completed_date', oneWeekAgo.toISOString())
+      
+      const { count: activeCount } = await supabase
+        .from('jobs')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['in_progress', 'scheduled'])
+      
+      const { count: quotesCount } = await supabase
+        .from('jobs')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'quoted')
+      
       setStats({
-        week_revenue: 8650,
-        active_jobs: 2,
-        pending_quotes: 1
+        week_revenue: (weekJobs || []).reduce((sum: number, job: any) => sum + (job.quote_total || 0), 0),
+        active_jobs: activeCount || 0,
+        pending_quotes: quotesCount || 0
       })
     } catch (error) {
       console.error('Error fetching data:', error)
+      // Fall back to mock data on error
+      setJobs(mockJobs)
+      setStats({ week_revenue: 8650, active_jobs: 2, pending_quotes: 1 })
     } finally {
       setLoading(false)
     }
